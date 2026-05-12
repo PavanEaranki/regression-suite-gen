@@ -141,8 +141,9 @@ async def generate_tests(req: GenerateRequest):
         "Accept": "application/vnd.github+json",
         "X-GitHub-Api-Version": "2022-11-28",
     }
-    if req.github_token:
-        gh_headers["Authorization"] = f"Bearer {req.github_token}"
+    token = req.github_token or os.getenv("GITHUB_TOKEN", "")
+    if token:
+        gh_headers["Authorization"] = f"Bearer {token}"
 
     async with httpx.AsyncClient(timeout=20) as client:
         pr_resp = await client.get(
