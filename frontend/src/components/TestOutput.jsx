@@ -2,7 +2,6 @@ import { useState } from "react";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 import { vscDarkPlus } from "react-syntax-highlighter/dist/esm/styles/prism";
 
-// Map our framework key to a Prism language id
 const LANG_MAP = {
   junit5:  "java",
   testng:  "java",
@@ -25,24 +24,18 @@ export default function TestOutput({ tests, framework, frameworkLabel, prTitle }
 
   return (
     <div className="card overflow-hidden flex flex-col">
-      {/* Header bar */}
       <div className="flex items-center justify-between px-5 py-3 border-b border-gray-800 bg-gray-950">
         <div className="flex items-center gap-3 min-w-0">
-          {/* Traffic-light dots (decorative) */}
           <div className="flex gap-1.5 flex-shrink-0">
             <div className="w-3 h-3 rounded-full bg-red-500 opacity-70" />
             <div className="w-3 h-3 rounded-full bg-amber-500 opacity-70" />
             <div className="w-3 h-3 rounded-full bg-emerald-500 opacity-70" />
           </div>
-          <div className="min-w-0">
-            <p className="text-xs font-mono text-gray-400 truncate">
-              {prTitle && <span className="text-gray-600 mr-2">// {prTitle}</span>}
-              <span className="text-amber-400">{frameworkLabel}</span>
-            </p>
-          </div>
+          <p className="text-xs font-mono text-amber-400 truncate">
+            {frameworkLabel}
+          </p>
         </div>
 
-        {/* Copy button */}
         <button
           onClick={handleCopy}
           className="flex items-center gap-1.5 text-xs text-gray-400 hover:text-gray-200 transition-colors ml-4 flex-shrink-0 font-medium"
@@ -65,7 +58,6 @@ export default function TestOutput({ tests, framework, frameworkLabel, prTitle }
         </button>
       </div>
 
-      {/* Syntax-highlighted code */}
       <div className="overflow-auto flex-1 max-h-[600px]">
         <SyntaxHighlighter
           language={language}
@@ -84,13 +76,9 @@ export default function TestOutput({ tests, framework, frameworkLabel, prTitle }
         </SyntaxHighlighter>
       </div>
 
-      {/* Footer hint */}
-      <div className="px-5 py-2.5 border-t border-gray-800 bg-gray-950 flex items-center gap-2">
-        <svg className="w-3.5 h-3.5 text-amber-500 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-          <path strokeLinecap="round" strokeLinejoin="round" d="M12 18v-5.25m0 0a6.01 6.01 0 001.5-.189m-1.5.189a6.01 6.01 0 01-1.5-.189m3.75 7.478a12.06 12.06 0 01-4.5 0m3.75 2.383a14.406 14.406 0 01-3 0M14.25 18v-.192c0-.983.658-1.823 1.508-2.316a7.5 7.5 0 10-7.517 0c.85.493 1.509 1.333 1.509 2.316V18" />
-        </svg>
+      <div className="px-5 py-2.5 border-t border-gray-800 bg-gray-950">
         <p className="text-xs text-gray-600">
-          Review generated tests before committing — always verify mock assumptions match your codebase.
+          Review tests before committing — verify mock assumptions match your codebase.
         </p>
       </div>
     </div>

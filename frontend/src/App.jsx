@@ -5,24 +5,23 @@ import PRForm from "./components/PRForm";
 import FileList from "./components/FileList";
 import TestOutput from "./components/TestOutput";
 
-// In dev, Vite proxies /api → localhost:8000.
-// In production (Vercel), set VITE_API_URL to your Render backend URL.
 const API_BASE = import.meta.env.VITE_API_URL || "";
 
 export default function App() {
-  const [loading, setLoading]   = useState(false);
-  const [error, setError]       = useState(null);
-  const [result, setResult]     = useState(null);  // GenerateResponse from backend
+  const [loading, setLoading] = useState(false);
+  const [error, setError]     = useState(null);
+  const [result, setResult]   = useState(null);
 
-  async function handleGenerate({ prUrl, ghToken, framework, scope, coverage }) {
+  async function handleGenerate({ prUrl, prUrl2, ghToken, framework, scope, coverage }) {
     setLoading(true);
     setError(null);
     setResult(null);
 
     try {
       const { data } = await axios.post(`${API_BASE}/api/generate-tests`, {
-        pr_url:       prUrl,
-        github_token: ghToken,
+        pr_url:        prUrl,
+        pr_url2:       prUrl2,
+        github_token:  ghToken,
         framework,
         scope,
         coverage,
@@ -32,7 +31,7 @@ export default function App() {
       const msg =
         err.response?.data?.detail ||
         err.message ||
-        "Unexpected error. Check the backend is running.";
+        "Something went wrong. Check the backend is running.";
       setError(String(msg));
     } finally {
       setLoading(false);
@@ -46,21 +45,19 @@ export default function App() {
       <main className="flex-1 max-w-6xl mx-auto w-full px-4 py-8">
         <div className="grid grid-cols-1 lg:grid-cols-[380px_1fr] gap-6 items-start">
 
-          {/* ── Left column: form ─────────────────────────────── */}
           <div className="space-y-4">
             <PRForm onSubmit={handleGenerate} loading={loading} />
 
-            {/* How it works */}
             <div className="card p-5">
               <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">
                 How it works
               </h3>
               <ol className="space-y-2.5">
                 {[
-                  ["GitHub API", "Fetches PR diff, file list, and PR metadata"],
-                  ["Diff parsing", "Extracts changed functions and context"],
-                  ["Gemini 1.5 Flash", "Generates tests with coverage for every changed path"],
-                  ["You", "Review, tweak, and commit the tests"],
+                  ["GitHub API", "Fetches the PR diff, changed files, and PR description"],
+                  ["Diff parsing", "Extracts what changed — functions, logic, lines"],
+                  ["Groq LLaMA 3.1", "Reads the diff and writes regression tests for every change"],
+                  ["You", "Review the tests, tweak if needed, and commit them"],
                 ].map(([step, desc], i) => (
                   <li key={step} className="flex gap-3 items-start">
                     <span className="w-5 h-5 rounded-full bg-amber-500/10 text-amber-500 text-xs font-semibold flex items-center justify-center flex-shrink-0 mt-0.5">
@@ -76,10 +73,8 @@ export default function App() {
             </div>
           </div>
 
-          {/* ── Right column: results ──────────────────────────── */}
           <div className="space-y-4 min-w-0">
 
-            {/* Loading skeleton */}
             {loading && (
               <div className="card p-8 flex flex-col items-center gap-4">
                 <div className="flex gap-1.5">
@@ -92,15 +87,14 @@ export default function App() {
                   ))}
                 </div>
                 <div className="text-center">
-                  <p className="text-sm font-medium text-gray-300">Analysing PR diff…</p>
+                  <p className="text-sm font-medium text-gray-300">Analysing PR diff...</p>
                   <p className="text-xs text-gray-600 mt-1">
-                    Fetching from GitHub → sending to Gemini → writing tests
+                    Fetching from GitHub → sending to Groq → writing tests
                   </p>
                 </div>
               </div>
             )}
 
-            {/* Error message */}
             {error && (
               <div className="card p-5 border-red-900 bg-red-950/30">
                 <div className="flex gap-3">
@@ -115,10 +109,8 @@ export default function App() {
               </div>
             )}
 
-            {/* Results */}
             {result && !loading && (
               <>
-                {/* PR title */}
                 <div className="card px-5 py-4 flex items-center gap-3">
                   <div className="w-8 h-8 rounded-full bg-purple-900 flex items-center justify-center flex-shrink-0">
                     <svg className="w-4 h-4 text-purple-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -134,7 +126,6 @@ export default function App() {
                   </span>
                 </div>
 
-                {/* Changed files */}
                 <FileList
                   files={result.files}
                   filesChanged={result.files_changed}
@@ -142,7 +133,6 @@ export default function App() {
                   deletions={result.deletions}
                 />
 
-                {/* Generated tests */}
                 <TestOutput
                   tests={result.tests}
                   framework={result.framework}
@@ -152,7 +142,6 @@ export default function App() {
               </>
             )}
 
-            {/* Empty state */}
             {!loading && !error && !result && (
               <div className="card p-12 flex flex-col items-center gap-4 border-dashed">
                 <div className="w-16 h-16 rounded-2xl bg-gray-800 flex items-center justify-center">
@@ -166,12 +155,10 @@ export default function App() {
                     Paste a GitHub PR URL on the left and click <span className="text-amber-500">Generate Tests</span>
                   </p>
                 </div>
-
-                {/* Example PR hint */}
                 <div className="mt-2 bg-gray-800 rounded-lg px-4 py-3 w-full max-w-sm">
-                  <p className="text-xs text-gray-500 mb-1">Try a public PR, e.g.</p>
+                  <p className="text-xs text-gray-500 mb-1">Try this public PR:</p>
                   <p className="text-xs font-mono text-gray-400 break-all">
-                    https://github.com/facebook/react/pull/31152
+                    https://github.com/django/django/pull/18033
                   </p>
                 </div>
               </div>
@@ -181,10 +168,9 @@ export default function App() {
         </div>
       </main>
 
-      {/* Footer */}
       <footer className="border-t border-gray-800 py-4 text-center">
         <p className="text-xs text-gray-700">
-          Powered by Gemini 1.5 Flash · GitHub REST API · FastAPI · React
+          Groq LLaMA 3.1 · GitHub REST API · FastAPI · React
         </p>
       </footer>
     </div>
